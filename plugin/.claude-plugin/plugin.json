@@ -1,0 +1,22 @@
+{
+  "name": "on-check",
+  "version": "0.1.0",
+  "description": "On 결재점검 원격 MCP(https://onmunseo.kr/mcp/check) 연결 — 결재 올리기 전에 공문서 형식·맞춤법·날짜·요일·금액·목록 합계를 규칙으로 점검하는 원격 MCP 서버. 서버 주소 하나만 담은 설정 꾸러미이며 엔진 코드·비밀값은 없습니다. A remote MCP server that checks Korean official documents before approval — format, spelling and spacing, dates and weekdays, amounts and list totals — with rules, not AI.",
+  "author": {
+    "name": "On 문서",
+    "url": "https://github.com/on-munseo"
+  },
+  "homepage": "https://github.com/on-munseo/on-check",
+  "repository": "https://github.com/on-munseo/on-check",
+  "keywords": [
+    "proofreading",
+    "spell-check",
+    "government",
+    "official-document",
+    "hwp",
+    "korean",
+    "mcp"
+  ],
+  "license": "MIT",
+  "privacyPolicyUrl": "https://onmunseo.kr/privacy"
+}

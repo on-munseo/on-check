@@ -1,0 +1,14 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.on-munseo/on-check",
+  "title": "On 결재점검",
+  "description": "Rule-based pre-approval checks for Korean official documents: format, spelling, dates, sums",
+  "version": "1.0.0",
+  "websiteUrl": "https://github.com/on-munseo/on-check",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://onmunseo.kr/mcp/check"
+    }
+  ]
+}
