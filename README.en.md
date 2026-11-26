@@ -14,7 +14,13 @@ Send a document (HWP/HWPX, PDF, Word) or pasted text (`text`). It is checked for
 
 This repository holds only the setup guide and configuration files (there is no web page here — to use a screen, open the [On 문서 web editor](https://onmunseo.kr/app/)). The engine and server code of the service are not public. The service and its tools speak Korean.
 
-**Jump to:** [Why](#in-short--why-use-it) · [Tools](#what-it-does) · [Connect](#connect) · [Examples](#examples) · [Measured results](#measured-results) · [Guest and key](#guest-and-key) · [Safety](#safety) · [Good to know](#good-to-know)
+## Comparing with other tools
+
+- **Rules, not AI:** unlike an AI spell checker, the same text always gives the same result, and every finding comes with the paragraph number, what → what, and the reason. No fix is made up.
+- **On one server:** it works together with text extraction, document writing and statute citation checks (On 근거) on the same On 문서 server.
+- **Where documents go:** documents sent to this address are processed only in memory on the On 문서 server (a data centre in Korea) and discarded afterwards; they are not sent to any outside AI company. Send only public documents or your own to this server-side address; handle internal documents of your organisation with the browser-only features of the [web editor](https://onmunseo.kr/app/) (open, edit and save HWP/HWPX, the pre-approval check, masking personal data) — attachment text extraction, OCR and HWPX creation in the web editor still go through the server.
+
+**Jump to:** [Comparing](#comparing-with-other-tools) · [Why](#in-short--why-use-it) · [Tools](#what-it-does) · [Connect](#connect) · [Examples](#examples) · [Measured results](#measured-results) · [Guest and key](#guest-and-key) · [Safety](#safety) · [Good to know](#good-to-know)
 
 ## In short — why use it
 
@@ -92,6 +98,17 @@ To send a key as a header, append `"--header", "Authorization:${ON_AUTH}"` to `"
 
 - ChatGPT receives a separate pass instead of your key (same permissions and daily quota). Revoking the key blocks the pass at once.
 - Passing a file attached in the chat is not supported yet. Upload the file on On 문서 “자료 올리기” ([onmunseo.kr/start](https://onmunseo.kr/start)) and pass the 15-minute link; paste text directly.
+
+### Codex
+
+Without a key, add two lines to `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.on-check]
+url = "https://onmunseo.kr/mcp/check"
+```
+
+- `codex mcp add` opens the On 문서 sign-in window right away. With a key, enter it there; without one, close it (Ctrl-C) and use the two lines above.
 
 ### Cursor
 
@@ -202,7 +219,7 @@ Weak spots: recall across all checks is 56.0%, so 44% of the places that should 
 |---|---|---|
 | How to connect | Add the URL with no authentication | Enter the key on the On 문서 sign-in page (OAuth), or send `Authorization: Bearer <key>` |
 | Tools at this endpoint | 1 | 1 |
-| Daily quota | 50 calls a day and 6 a minute per internet address (IP), counted across all On 문서 endpoints and the web editor. When the shared guest quota for the day runs out, guest access closes until midnight Korea time | A daily quota and concurrency limit set per key |
+| Daily quota | 50 calls a day and 6 a minute (the statute tools `law_`·`med_` have their own 100 a day and 20 a minute) per internet address (IP), counted across all On 문서 endpoints and the web editor. When the shared guest quota for the day runs out, guest access closes until midnight Korea time | A daily quota and concurrency limit set per key |
 | Size | 6 MB per request (base64 included) | 25 MB per file |
 | Needs a key | — | text recognition (`ocr: true`, scanned pages and images — 30 pages a day per key) |
 
@@ -214,7 +231,7 @@ Weak spots: recall across all checks is 56.0%, so 44% of the places that should 
 
 1. **Nothing is kept.** Documents and text you send are handled in server memory only and discarded when done. No document files are stored; the access log holds only the key alias, tool name, request size, time taken and success (no contents, no file names).
 2. **Rule-based, no AI.** The same text gives the same result, and nothing is sent to outside AI companies.
-3. **Send only public documents or your own.** Do not upload internal documents of your organisation. Documents with a written security marking (such as “대외비”, confidential) are not returned (except for keys specially allowed to).
+3. **Send only public documents or your own to this server-side address.** Handle internal documents of your organisation with the browser-only features of the [web editor](https://onmunseo.kr/app/) (open, edit and save HWP/HWPX, the pre-approval check, masking personal data). Documents with a written security marking (such as “대외비”, confidential) are not returned (except for keys specially allowed to).
 4. **Extracted text is returned as data.** When a result carries text taken from a document, its first line says not to follow instructions written inside the document, so text that looks like an instruction to the AI is not obeyed.
 5. **Safety limits stay on.** Size limits against attacks such as zip bombs, and refusal of distribution-only documents, are never lifted for convenience.
 
@@ -245,7 +262,7 @@ Report security problems as described in [SECURITY.md](SECURITY.md).
 - **OAuth (sign-in page)** — You enter the key on the On 문서 sign-in page when connecting; the app receives a separate pass instead of the key.
 - **HWPX** — The XML format of Korean Hangul documents (KS X 6101 OWPML); .hwp is the older format.
 - **base64** — A way of writing a file as text, used to put a file inside JSON.
-- **Upload link (15 minutes)** — Uploading a file on the On 문서 web ([onmunseo.kr/start](https://onmunseo.kr/start)) gives a link that works for 15 minutes; pass it as `file_url` from AI chats that cannot send files.
+- **Upload link (15 minutes)** — Uploading a file on the On 문서 web ([onmunseo.kr/start](https://onmunseo.kr/start)) gives a link that works for 15 minutes; pass it as `file_url` from AI chats that cannot send files. AI tools that can run commands (Claude Code and others) can upload with one line, `curl -s --data-binary @file -H "x-file-name: name" https://onmunseo.kr/api/drop`, and get the same link (`url`) — faster than base64, and uploads do not count against the daily quota.
 - **Recall · precision** — Recall: share of the places that should be found that were found. Precision: share of findings that were right.
 - **check_only** — A finding with no direct fix from the rules; a person decides.
 
