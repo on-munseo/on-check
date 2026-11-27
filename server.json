@@ -5,6 +5,10 @@
   "description": "Rule-based pre-approval checks for Korean official documents: format, spelling, dates, sums",
   "version": "1.0.0",
   "websiteUrl": "https://github.com/on-munseo/on-check",
+  "repository": {
+    "url": "https://github.com/on-munseo/on-check",
+    "source": "github"
+  },
   "remotes": [
     {
       "type": "streamable-http",
