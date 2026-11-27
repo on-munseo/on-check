@@ -10,8 +10,29 @@ A remote MCP server that checks Korean official documents before approval — fo
 
 </div>
 
+Send a document (HWP/HWPX, PDF, Word) or pasted text (`text`). It is checked for official-document format (date and time notation, attachments, the closing mark), spelling and spacing, dates and weekdays, amounts, list totals and numbering order; each finding comes back with the paragraph number, what to change into what, and why. The checks are rule-based (no AI), and the document itself is not changed.
+
+This repository holds only the setup guide and configuration files (including one small plugin launcher) (there is no web page here — to use a screen, open the [On 문서 web editor](https://onmunseo.kr/app/)). The engine and server code of the service are not public. The service and its tools speak Korean.
+
+- **Rules, not AI:** with no language model involved, the same text always gives the same result, and every finding comes with the paragraph number, what → what, and the reason. No fix is made up.
+- **On one server:** it works together with text extraction, document writing and statute citation checks (On 근거) on the same On 문서 server.
+- **Where documents go:** documents sent to this address are processed only in memory on the On 문서 server (a data centre in Korea) and discarded afterwards; they are not sent to any outside AI company. Send only public documents or your own to this server-side address; handle internal documents of your organisation with the browser-only features of the [web editor](https://onmunseo.kr/app/) (open, edit and save HWP/HWPX, the pre-approval check, masking personal data) — attachment text extraction, OCR and HWPX creation in the web editor still go through the server.
+
+**Jump to:** [Why](#in-short--why-use-it) · [Install](#installation-guide-for-people-and-ai-assistants) · [Measured results](#measured-results) · [Tools](#what-it-does) · [Connect](#connect) · [Examples](#examples) · [Guest and key](#guest-and-key) · [Safety](#safety) · [Good to know](#good-to-know)
+
+## In short — why use it
+
+| Common pain | With On 결재점검 |
+|---|---|
+| You open a calendar to check dates and weekdays | Impossible dates and wrong weekdays are flagged (e.g. “2026. 11. 31.” → November has 30 days) |
+| You add up amounts and list totals again by hand | Amount notation and list totals are checked (table totals are re-calculated in the web editor) |
+| You look up official notation (date dots, attachments, the closing “끝.”) every time | Format rules flag them and suggest the fix |
+| An AI chat gives a different review each time you ask | The checks are rules, so the same text always gives the same result |
+
+**When you do not need it:** For one or two lines, reading it yourself may be faster. The checks miss things (see Measured results), so they do not replace a final human review.
+
 <!-- ai-install -->
-## For AI assistants — installing this repository
+## Installation guide (for people and AI assistants)
 
 There are three paths; **start with ①**. None needs a key or sign-in. The tools of this repository (On 결재점검 — pre-approval checks) are in ① the local edition (the npm package `on-munseo-local` by the same maker, on-munseo — see the checks below) — when simply asked to install, register ①. `plugin/` (the Claude Code plugin) in this repository adds ① and ②, and `server.json` (for the official MCP registry) lists ③, the server edition of this bundle.
 
@@ -64,28 +85,20 @@ The tools do not attach to the conversation that registered them. When done, tel
 
 <!-- ai-install -->
 
-Send a document (HWP/HWPX, PDF, Word) or pasted text (`text`). It is checked for official-document format (date and time notation, attachments, the closing mark), spelling and spacing, dates and weekdays, amounts, list totals and numbering order; each finding comes back with the paragraph number, what to change into what, and why. The checks are rule-based (no AI), and the document itself is not changed.
+## Measured results
 
-This repository holds only the setup guide and configuration files (including one small plugin launcher) (there is no web page here — to use a screen, open the [On 문서 web editor](https://onmunseo.kr/app/)). The engine and server code of the service are not public. The service and its tools speak Korean.
+| What | Test set | Result | Build · date · machine |
+|---|---|---|---|
+| Format checks | Test part of a self-made set of 120 official-format cases | recall 89.9% · precision 100% | 2026-11-11 · Mac M5 Pro |
+| All pre-approval checks | Same set, test part | recall 56.0% · precision 100% | 2026-11-11 · Mac M5 Pro |
+| Clean documents | Same set | 0 of 24 wrongly flagged (format and all checks) | 2026-11-11 |
+| Spelling | Test part of 879 self-made sentences | recall 68.8% · precision 100% · 0 of 161 correct sentences flagged | 2026-11-11 · Mac M5 Pro |
+| Warnings on real public documents | Warnings raised on 19,643 public documents, sampled and judged one by one (test part, weighted by warning volume) | share of correct warnings — format 91.8% · spelling 89.6% | 2026-11-13 · Windows i7-14700 |
+| Security markings (all of On 문서) | 19,643 public documents · 40 lines with hidden markings (self-made) | ordinary documents wrongly blocked as confidential 0 · hidden markings found 90% · ordinary lines wrongly blocked 10% | 2026-11-13 · 2026-11-11 |
 
-## Comparing with other tools
+<sub>All values were measured by us, with the builds of 2026-11-11 and 11-13, and have not been re-run on the live build. The 120 cases, 879 sentences and 40 lines are our own tests and may be easier than real documents. The warnings on the 19,643 documents were judged by a single judge (an AI), on public documents only, with no real internal drafts. Recall = share of the places that should be found that were found; precision = share of findings that were right.</sub>
 
-- **Rules, not AI:** unlike an AI spell checker, the same text always gives the same result, and every finding comes with the paragraph number, what → what, and the reason. No fix is made up.
-- **On one server:** it works together with text extraction, document writing and statute citation checks (On 근거) on the same On 문서 server.
-- **Where documents go:** documents sent to this address are processed only in memory on the On 문서 server (a data centre in Korea) and discarded afterwards; they are not sent to any outside AI company. Send only public documents or your own to this server-side address; handle internal documents of your organisation with the browser-only features of the [web editor](https://onmunseo.kr/app/) (open, edit and save HWP/HWPX, the pre-approval check, masking personal data) — attachment text extraction, OCR and HWPX creation in the web editor still go through the server.
-
-**Jump to:** [Comparing](#comparing-with-other-tools) · [Why](#in-short--why-use-it) · [Tools](#what-it-does) · [Connect](#connect) · [Examples](#examples) · [Measured results](#measured-results) · [Guest and key](#guest-and-key) · [Safety](#safety) · [Good to know](#good-to-know)
-
-## In short — why use it
-
-| Common pain | With On 결재점검 |
-|---|---|
-| You open a calendar to check dates and weekdays | Impossible dates and wrong weekdays are flagged (e.g. “2026. 11. 31.” → November has 30 days) |
-| You add up amounts and list totals again by hand | Amount notation and list totals are checked (table totals are re-calculated in the web editor) |
-| You look up official notation (date dots, attachments, the closing “끝.”) every time | Format rules flag them and suggest the fix |
-| An AI chat gives a different review each time you ask | The checks are rules, so the same text always gives the same result |
-
-**When you do not need it:** For one or two lines, reading it yourself may be faster. The checks miss things (see Measured results), so they do not replace a final human review.
+Weak spots: recall across all checks is 56.0%, so 44% of the places that should be found are missed (precision in the same test is 100%). Spelling recall is 68.8%. Treat results as a reference; a person makes the final call.
 
 ## What it does
 
@@ -98,7 +111,7 @@ This repository holds only the setup guide and configuration files (including on
 
 ## Connect
 
-Of the three paths at the top ([For AI assistants](#for-ai-assistants--installing-this-repository): ① local edition · ② pair address · ③ server edition), this section details ③, the server edition of this bundle, for each tool.
+Of the three paths in the [installation guide](#installation-guide-for-people-and-ai-assistants) above (① local edition · ② pair address · ③ server edition), this section details ③, the server edition of this bundle, for each tool.
 
 **Claude Code** — one line in the terminal (`-s user` makes it available in every folder):
 
@@ -253,21 +266,6 @@ One “날짜·요일” (date/weekday) finding came back: November 2026 has onl
 | “Fix only the findings that have a definite correction” | The AI applies `to` from items that are not `check_only` |
 
 The AI decides which tool to call; these are typical cases.
-
-## Measured results
-
-| What | Test set | Result | Build · date · machine |
-|---|---|---|---|
-| Format checks | Test part of a self-made set of 120 official-format cases | recall 89.9% · precision 100% | 2026-11-11 · Mac M5 Pro |
-| All pre-approval checks | Same set, test part | recall 56.0% · precision 100% | 2026-11-11 · Mac M5 Pro |
-| Clean documents | Same set | 0 of 24 wrongly flagged (format and all checks) | 2026-11-11 |
-| Spelling | Test part of 879 self-made sentences | recall 68.8% · precision 100% · 0 of 161 correct sentences flagged | 2026-11-11 · Mac M5 Pro |
-| Warnings on real public documents | Warnings raised on 19,643 public documents, sampled and judged one by one (test part, weighted by warning volume) | share of correct warnings — format 91.8% · spelling 89.6% | 2026-11-13 · Windows i7-14700 |
-| Security markings (all of On 문서) | 19,643 public documents · 40 lines with hidden markings (self-made) | ordinary documents wrongly blocked as confidential 0 · hidden markings found 90% · ordinary lines wrongly blocked 10% | 2026-11-13 · 2026-11-11 |
-
-<sub>All values were measured by us, with the builds of 2026-11-11 and 11-13, and have not been re-run on the live build. The 120 cases, 879 sentences and 40 lines are our own tests and may be easier than real documents. The warnings on the 19,643 documents were judged by a single judge (an AI), on public documents only, with no real internal drafts. Recall = share of the places that should be found that were found; precision = share of findings that were right.</sub>
-
-Weak spots: recall across all checks is 56.0%, so 44% of the places that should be found are missed (precision in the same test is 100%). Spelling recall is 68.8%. Treat results as a reference; a person makes the final call.
 
 ## Guest and key
 
